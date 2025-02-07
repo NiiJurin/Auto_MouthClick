@@ -1,4 +1,4 @@
-('C:\\Users\\kanomax01\\Documents\\shoji\\test\\voice\\build\\guiauto\\PYZ-00.pyz',
+('C:\\Users\\kanomax01\\Documents\\shoji\\test\\voice\\auto\\build\\guiauto\\PYZ-00.pyz',
  [('PyQt5',
    'C:\\Users\\kanomax01\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\PyQt5\\__init__.py',
    'PYMODULE'),

@@ -1,10 +1,11 @@
 """
-GUI + Mouse Macro + Fキーホットキー Example
-===========================================
+GUI + Mouse Macro + Fキーホットキー Example with Loop Count
+============================================================
 - Tkinterを使った簡易GUI（録画開始 / 停止 / 再生 / 強制停止 / 終了）
 - さらに F1～F4, Esc で各操作をホットキー呼び出し
 - pynput でマウスクリックをフック (recording 中のみ記録)
 - pyautogui で再生
+- ★ ループ回数をSpinboxで入力し、その回数だけ再生を繰り返す
 
 PyInstaller でexe化:
   pip install pyinstaller
@@ -33,14 +34,14 @@ keyboard_listener = None
 root = None           # Tkinterメインウィンドウ
 log_area = None       # ログ表示エリア (ScrolledText)
 
+# ループ回数をGUIから取得するための変数 (IntVar)
+loop_count_var = None
+
 # -----------------------------
 # マウスイベント (クリック)
 # -----------------------------
 def on_click(x, y, button, pressed):
     global recording, last_click_time
-    # デバッグ表示してもよい
-    #append_log(f"[DEBUG on_click] pressed={pressed}, x={x}, y={y}, button={button}, recording={recording}")
-
     if recording and pressed:
         now = time.time()
         if last_click_time is None:
@@ -52,11 +53,9 @@ def on_click(x, y, button, pressed):
         append_log(f"[RECORD] click at ({x}, {y}), interval={elapsed:.2f}s")
 
 # -----------------------------
-# キーボードイベント (ホットキー)
+# キーボードイベント (F1～F4, Esc)
 # -----------------------------
 def on_press(key):
-    """Fキー or Esc で各機能を呼び出し"""
-    #append_log(f"[DEBUG on_press] key={key}")
     try:
         if key == keyboard.Key.f1:
             start_recording()
@@ -83,7 +82,7 @@ def append_log(message):
         log_area.see(tk.END)
 
 # -----------------------------
-# ボタン操作: 録画開始
+# 録画開始 (F1 or ボタン)
 # -----------------------------
 def start_recording():
     global recording, last_click_time, recorded_clicks
@@ -97,7 +96,7 @@ def start_recording():
     recording = True
 
 # -----------------------------
-# ボタン操作: 録画停止
+# 録画停止 (F2 or ボタン)
 # -----------------------------
 def stop_recording():
     global recording
@@ -109,7 +108,7 @@ def stop_recording():
         append_log("[INFO] 録画は開始されていません。")
 
 # -----------------------------
-# ボタン操作: 再生開始
+# 再生開始 (F3 or ボタン)
 # -----------------------------
 def start_replay():
     global recording, replaying
@@ -123,11 +122,11 @@ def start_replay():
         append_log("[INFO] 記録がありません。先に録画してください。")
         return
 
-    replay_thread = threading.Thread(target=replay_clicks, daemon=True)
+    replay_thread = threading.Thread(target=replay_clicks_with_loop, daemon=True)
     replay_thread.start()
 
 # -----------------------------
-# ボタン操作: 再生強制停止
+# 再生強制停止 (F4 or ボタン)
 # -----------------------------
 def force_stop_replay():
     global force_stop
@@ -135,39 +134,67 @@ def force_stop_replay():
     append_log("[INFO] 再生を強制停止リクエスト")
 
 # -----------------------------
-# 再生処理
+# ループ再生処理
 # -----------------------------
-def replay_clicks():
+def replay_clicks_with_loop():
+    """
+    Spinboxに設定された回数だけ、recorded_clicksを繰り返し再生
+    """
     global replaying, force_stop
+
+    # Spinboxからループ回数を取得
+    count = loop_count_var.get()
+    append_log(f"[INFO] {count}回ループ再生を開始します...")
+
     replaying = True
-    append_log("[INFO] Start replaying...")
 
-    for i, (elapsed, x, y) in enumerate(recorded_clicks):
+    for loop_i in range(1, count + 1):
+        # ループ開始チェック
         if force_stop:
             append_log("[INFO] 再生が強制停止されました。")
             force_stop = False
             break
-        time.sleep(elapsed)
-        if force_stop:
-            append_log("[INFO] 再生が強制停止されました。")
-            force_stop = False
-            break
-        pyautogui.moveTo(x, y)
-        pyautogui.click()
-        append_log(f"[REPLAY] ({i+1}/{len(recorded_clicks)}) click at ({x}, {y}) after {elapsed:.2f}s")
 
+        append_log(f"== ループ {loop_i}/{count} 回目 ==")
+        start_time = time.time()
+
+        # クリックシーケンス再生
+        for i, (elapsed, x, y) in enumerate(recorded_clicks):
+            if force_stop:
+                append_log("[INFO] 再生が強制停止されました。")
+                force_stop = False
+                break
+            time.sleep(elapsed)
+            if force_stop:
+                append_log("[INFO] 再生が強制停止されました。")
+                force_stop = False
+                break
+            pyautogui.moveTo(x, y)
+            pyautogui.click()
+            append_log(f"[REPLAY] loop={loop_i}, step=({i+1}/{len(recorded_clicks)}) "
+                       f"click at ({x}, {y}) after {elapsed:.2f}s")
+
+        if force_stop:
+            break
+
+        elapsed_total = time.time() - start_time
+        append_log(f"== {loop_i}回目の再生完了 (合計{elapsed_total:.2f}s) ==")
+
+    # ループを最後まで回った、または強制停止
     if not force_stop:
-        append_log("[INFO] Replay finished.")
+        append_log("[INFO] ループ再生が完了しました。")
+
     replaying = False
+    force_stop = False
 
 # -----------------------------
 # GUI作成
 # -----------------------------
 def create_gui():
-    global root, log_area
+    global root, log_area, loop_count_var
 
     root = tk.Tk()
-    root.title("マウス録画・再生 (Tkinter + F1～F4)")
+    root.title("マウス録画・再生 (Tkinter + Fキー + ループ)")
 
     frame_buttons = tk.Frame(root)
     frame_buttons.pack(pady=5)
@@ -186,6 +213,14 @@ def create_gui():
 
     btn_quit = tk.Button(frame_buttons, text="終了", command=root.quit, width=5)
     btn_quit.grid(row=0, column=4, padx=5)
+
+    # ループ回数を指定するSpinbox
+    loop_label = tk.Label(root, text="ループ回数:")
+    loop_label.pack()
+
+    loop_count_var = tk.IntVar(value=1)
+    loop_spin = tk.Spinbox(root, from_=1, to=999, textvariable=loop_count_var, width=5)
+    loop_spin.pack()
 
     # ログ表示エリア
     log_area = scrolledtext.ScrolledText(root, width=80, height=15)
