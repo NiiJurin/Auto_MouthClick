@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mouse Macro NEW UI Reset Mock</title>
+  <style>
+    :root {
+      --bg: #eef1f5;
+      --panel: #ffffff;
+      --panel-2: #f8fafc;
+      --line: #d9dee7;
+      --line-strong: #bcc5d3;
+      --text: #1c2430;
+      --muted: #697386;
+      --blue: #2474b8;
+      --blue-dark: #155f9d;
+      --red: #cf3a30;
+      --green: #23885f;
+      --amber: #a96f16;
+      --shadow: 0 12px 32px rgba(23, 35, 52, .10);
+      --radius: 8px;
+    }
+
+    body.dark {
+      --bg: #111112;
+      --panel: #1b1b1d;
+      --panel-2: #242426;
+      --line: #343437;
+      --line-strong: #55565a;
+      --text: #f3f4f6;
+      --muted: #a8abb3;
+      --green: #57c785;
+      --amber: #f0b35a;
+      --shadow: none;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Yu Gothic UI", "Noto Sans JP", "Segoe UI", "Meiryo", sans-serif;
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .topbar,
+    .panel,
+    .statusbar {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 18px;
+      min-height: 64px;
+      padding: 10px 14px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 240px;
+    }
+
+    .brand strong {
+      font-size: 20px;
+      line-height: 1.1;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .run-context {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 28px;
+      max-width: 100%;
+      padding: 5px 10px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--panel-2);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .pill strong {
+      color: var(--text);
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 99px;
+      background: var(--green);
+    }
+
+    .mode-tabs {
+      display: inline-grid;
+      grid-template-columns: 1fr 1fr;
+      min-width: 180px;
+      overflow: hidden;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      background: var(--panel-2);
+    }
+
+    .theme-tabs {
+      min-width: 132px;
+    }
+
+    .tab {
+      border: 0;
+      min-height: 32px;
+      padding: 0 14px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+    }
+
+    .tab.active {
+      background: var(--blue);
+      color: #fff;
+      font-weight: 700;
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 300px minmax(420px, 1fr) 370px;
+      gap: 12px;
+      min-height: 0;
+    }
+
+    .main.is-single {
+      grid-template-columns: 300px minmax(420px, 1fr);
+    }
+
+    .panel {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      min-height: 48px;
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: 16px;
+      line-height: 1.2;
+    }
+
+    .panel-body {
+      padding: 12px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 10px;
+    }
+
+    .field {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .field label {
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .number {
+      width: 82px;
+      min-height: 30px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      padding: 4px 8px;
+      text-align: right;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .btn {
+      min-height: 42px;
+      border: 0;
+      border-radius: 7px;
+      padding: 8px 12px;
+      background: #e6ebf2;
+      color: var(--text);
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn.primary {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .btn.primary:hover {
+      background: var(--blue-dark);
+    }
+
+    .btn.danger {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .btn.subtle {
+      background: #eef2f7;
+      border: 1px solid var(--line);
+      color: #334155;
+      font-weight: 600;
+    }
+
+    .key {
+      margin-left: 5px;
+      color: rgba(255,255,255,.90);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .shortcut-list {
+      display: grid;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .shortcut {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 8px;
+      min-height: 30px;
+      color: var(--muted);
+    }
+
+    .shortcut kbd {
+      min-width: 44px;
+      padding: 4px 7px;
+      border: 1px solid var(--line-strong);
+      border-radius: 5px;
+      background: #fff;
+      color: var(--text);
+      text-align: center;
+      font-family: inherit;
+      font-weight: 700;
+    }
+
+    .library {
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .toolbar .btn {
+      min-height: 34px;
+      padding: 6px 12px;
+    }
+
+    .search {
+      min-width: 160px;
+      flex: 1;
+      min-height: 34px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      padding: 6px 10px;
+    }
+
+    .macro-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table-wrap {
+      min-height: 0;
+      overflow: auto;
+      background: #fff;
+    }
+
+    .macro-table th,
+    .macro-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .macro-table th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: var(--panel-2);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .macro-table tr.selected td {
+      background: #e9f2fb;
+      border-bottom-color: #c7def3;
+    }
+
+    .name-cell {
+      font-weight: 800;
+      color: var(--text);
+    }
+
+    .memo {
+      color: var(--muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 260px;
+    }
+
+    .detail-strip {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 11px 12px;
+      border-top: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .detail-title {
+      font-weight: 800;
+    }
+
+    .detail-meta {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .detail-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .playlist {
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+    }
+
+    .main.is-single .playlist {
+      display: none;
+    }
+
+    .queue-meta {
+      display: grid;
+      gap: 8px;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .queue-row {
+      display: grid;
+      grid-template-columns: 26px 1fr auto;
+      gap: 8px;
+      align-items: center;
+      min-height: 58px;
+      padding: 9px 10px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .queue-row.selected {
+      border-color: #9cc6ea;
+      background: #eff7ff;
+    }
+
+    .queue-list {
+      display: grid;
+      gap: 8px;
+      min-height: 0;
+      overflow: auto;
+      padding: 10px 12px;
+      background: #fbfcfe;
+    }
+
+    .drag-handle {
+      color: var(--muted);
+      text-align: center;
+      font-weight: 900;
+    }
+
+    .queue-name {
+      font-weight: 800;
+      min-width: 0;
+    }
+
+    .queue-time {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .loop-mini {
+      display: inline-grid;
+      grid-template-columns: auto 56px;
+      align-items: center;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .loop-mini input {
+      min-height: 30px;
+      border: 1px solid var(--line-strong);
+      border-radius: 6px;
+      padding: 4px 6px;
+      text-align: right;
+      width: 56px;
+    }
+
+    .queue-footer {
+      display: grid;
+      grid-template-columns: 34px 34px 1fr 1fr;
+      gap: 7px;
+      padding: 10px 12px;
+      border-top: 1px solid var(--line);
+      background: var(--panel-2);
+    }
+
+    .icon-btn {
+      min-height: 34px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fff;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .statusbar {
+      display: grid;
+      grid-template-columns: auto 1fr auto auto;
+      align-items: center;
+      gap: 10px;
+      min-height: 44px;
+      padding: 6px 10px;
+      box-shadow: none;
+    }
+
+    .status-message {
+      min-width: 0;
+      color: var(--green);
+      font-weight: 800;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .log-drawer {
+      grid-column: 1 / -1;
+      display: none;
+      height: 96px;
+      margin-top: 6px;
+      padding: 10px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #111827;
+      color: #e5e7eb;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .statusbar.open .log-drawer {
+      display: block;
+    }
+
+    .status-label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    @media (max-width: 1120px) {
+      .main {
+        grid-template-columns: 280px 1fr;
+      }
+
+      .main.is-single {
+        grid-template-columns: 280px 1fr;
+      }
+
+      .playlist {
+        grid-column: 1 / -1;
+        min-height: 280px;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .run-context {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <strong>Mouse Macro NEW</strong>
+        <span>v0.9.0 / UI reset mock</span>
+      </div>
+      <div class="run-context" aria-label="現在の状態">
+        <span class="pill"><span class="status-dot"></span><strong>待機中</strong></span>
+        <span class="pill">選択中 <strong id="currentMacro">default</strong></span>
+        <span class="pill">F3 <strong id="modeLabel">単体</strong></span>
+      </div>
+      <div class="mode-tabs" role="tablist" aria-label="再生対象">
+        <button class="tab active" type="button" data-mode="単体">単体</button>
+        <button class="tab" type="button" data-mode="複数">複数</button>
+      </div>
+      <div class="mode-tabs theme-tabs" role="tablist" aria-label="表示テーマ">
+        <button class="tab active" type="button" data-theme="light">ライト</button>
+        <button class="tab" type="button" data-theme="dark">ダーク</button>
+      </div>
+    </header>
+
+    <main class="main is-single" id="mainWorkspace">
+      <section class="panel">
+        <div class="panel-header">
+          <h2>実行</h2>
+          <span class="status-label">最優先操作</span>
+        </div>
+        <div class="panel-body stack">
+          <div class="button-grid">
+            <button class="btn primary" type="button">録画開始 <span class="key">F1</span></button>
+            <button class="btn primary" type="button">録画停止 <span class="key">F2</span></button>
+            <button class="btn primary" type="button">再生開始 <span class="key">F3</span></button>
+            <button class="btn danger" type="button">全停止 <span class="key">F4</span></button>
+          </div>
+
+          <div class="field">
+            <label for="singleLoop">単体ループ</label>
+            <input id="singleLoop" class="number" type="number" min="1" value="200" />
+          </div>
+
+          <div class="field">
+            <label for="playlistLoop">リスト全体</label>
+            <input id="playlistLoop" class="number" type="number" min="1" value="1" />
+          </div>
+
+          <div class="panel-header" style="min-height:38px; padding:9px 0 4px; border:0; background:transparent;">
+            <h2 style="font-size:14px;">ショートカット</h2>
+          </div>
+          <div class="shortcut-list">
+            <div class="shortcut"><span>録画開始</span><kbd>F1</kbd></div>
+            <div class="shortcut"><span>録画停止</span><kbd>F2</kbd></div>
+            <div class="shortcut"><span>再生開始</span><kbd>F3</kbd></div>
+            <div class="shortcut"><span>全停止</span><kbd>F4</kbd></div>
+            <div class="shortcut"><span>終了</span><kbd>Esc</kbd></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel library">
+        <div class="panel-header">
+          <h2>マクロ</h2>
+          <span class="status-label">7件</span>
+        </div>
+        <div class="toolbar">
+          <input class="search" type="search" value="" placeholder="マクロを検索" />
+          <button class="btn primary" type="button">新規</button>
+          <button class="btn subtle" type="button">編集</button>
+          <button class="btn subtle" type="button">複製</button>
+        </div>
+        <div class="table-wrap">
+          <table class="macro-table">
+            <thead>
+              <tr>
+                <th>名前</th>
+                <th>時間</th>
+                <th>クリック</th>
+                <th>メモ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="selected" data-name="default">
+                <td class="name-cell">default</td>
+                <td>4.7秒</td>
+                <td>8</td>
+                <td class="memo">基本動作テスト</td>
+              </tr>
+              <tr data-name="マクロテスト2">
+                <td class="name-cell">マクロテスト2</td>
+                <td>5.1秒</td>
+                <td>11</td>
+                <td class="memo">右クリック含む</td>
+              </tr>
+              <tr data-name="アプリ生成">
+                <td class="name-cell">アプリ生成</td>
+                <td>57.6秒</td>
+                <td>47</td>
+                <td class="memo">長めの作業</td>
+              </tr>
+              <tr data-name="レベル90以下">
+                <td class="name-cell">レベル90以下</td>
+                <td>11.9秒</td>
+                <td>5</td>
+                <td class="memo">繰り返し用</td>
+              </tr>
+              <tr data-name="中間素材">
+                <td class="name-cell">中間素材</td>
+                <td>39.1秒</td>
+                <td>5</td>
+                <td class="memo">素材確認</td>
+              </tr>
+              <tr data-name="薬とか最新">
+                <td class="name-cell">薬とか最新</td>
+                <td>70.4秒</td>
+                <td>7</td>
+                <td class="memo">本番用候補</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="detail-strip">
+          <div>
+            <div class="detail-title" id="detailTitle">default</div>
+            <div class="detail-meta">8クリック / 4.7秒 / クリック後入力あり</div>
+          </div>
+          <div class="detail-actions">
+            <button class="btn subtle" type="button">名前変更</button>
+            <button class="btn subtle" type="button">削除</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel playlist">
+        <div class="panel-header">
+          <h2>複数リスト</h2>
+          <span class="status-label">ドラッグで並べ替え</span>
+        </div>
+        <div class="queue-meta">
+          <button class="btn primary" type="button" id="addQueue">選択マクロを追加</button>
+          <div class="field" style="min-height:38px;">
+            <label>予定時間</label>
+            <strong>1周 10559.6秒 / 全体 10559.6秒</strong>
+          </div>
+        </div>
+        <div class="queue-list" id="queueList">
+          <div class="queue-row selected">
+            <div class="drag-handle">1</div>
+            <div>
+              <div class="queue-name">薬とか最新</div>
+              <div class="queue-time">10559.6秒</div>
+            </div>
+            <label class="loop-mini">x <input type="number" min="1" value="150" /></label>
+          </div>
+          <div class="queue-row">
+            <div class="drag-handle">2</div>
+            <div>
+              <div class="queue-name">修理</div>
+              <div class="queue-time">0.0秒</div>
+            </div>
+            <label class="loop-mini">x <input type="number" min="1" value="1" /></label>
+          </div>
+        </div>
+        <div class="queue-footer">
+          <button class="icon-btn" type="button">↑</button>
+          <button class="icon-btn" type="button">↓</button>
+          <button class="btn subtle" type="button">削除</button>
+          <button class="btn subtle" type="button">クリア</button>
+        </div>
+      </section>
+    </main>
+
+    <footer class="statusbar" id="statusbar">
+      <button class="icon-btn" type="button" id="logToggle">⌃</button>
+      <div class="status-message" id="statusText">選択: default (8クリック / 4.7秒)</div>
+      <span class="status-label">ログ</span>
+      <button class="btn subtle" type="button" style="min-height:32px;">クリア</button>
+      <div class="log-drawer">
+        起動しました<br />
+        設定を読み込みました<br />
+        選択: default (8クリック / 4.7秒)
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll(".tab");
+    const modeTabs = document.querySelectorAll("[data-mode]");
+    const themeTabs = document.querySelectorAll("[data-theme]");
+    const modeLabel = document.getElementById("modeLabel");
+    const mainWorkspace = document.getElementById("mainWorkspace");
+
+    function setMode(mode) {
+      modeTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.mode === mode));
+      modeLabel.textContent = mode;
+      mainWorkspace.classList.toggle("is-single", mode !== "複数");
+    }
+
+    function setTheme(theme) {
+      document.body.classList.toggle("dark", theme === "dark");
+      themeTabs.forEach((tab) => tab.classList.toggle("active", tab.dataset.theme === theme));
+    }
+
+    modeTabs.forEach((button) => {
+      button.addEventListener("click", () => {
+        setMode(button.dataset.mode);
+      });
+    });
+
+    themeTabs.forEach((button) => {
+      button.addEventListener("click", () => {
+        setTheme(button.dataset.theme);
+      });
+    });
+
+    document.querySelectorAll(".macro-table tbody tr").forEach((row) => {
+      row.addEventListener("click", () => {
+        document.querySelectorAll(".macro-table tbody tr").forEach((r) => r.classList.remove("selected"));
+        row.classList.add("selected");
+        const name = row.dataset.name || row.querySelector(".name-cell").textContent;
+        document.getElementById("currentMacro").textContent = name;
+        document.getElementById("detailTitle").textContent = name;
+        document.getElementById("statusText").textContent = `選択: ${name}`;
+      });
+    });
+
+    document.getElementById("logToggle").addEventListener("click", () => {
+      const statusbar = document.getElementById("statusbar");
+      statusbar.classList.toggle("open");
+      document.getElementById("logToggle").textContent = statusbar.classList.contains("open") ? "⌄" : "⌃";
+    });
+
+    document.getElementById("addQueue").addEventListener("click", () => {
+      const selected = document.querySelector(".macro-table tr.selected .name-cell");
+      if (!selected) return;
+      document.getElementById("statusText").textContent = `追加: ${selected.textContent} x1`;
+      setMode("複数");
+    });
+  </script>
+</body>
+</html>
